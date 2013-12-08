@@ -160,7 +160,7 @@ def select_python_package( selection=None ):
 #
 # =============================================================================
 
-def run_local(command, sudo=False, shell=True, pty=True, combine_stderr=None):
+def run_local(command, sudo=False, shell=True, pty=True, combine_stderr=None, user=None, group=None):
 	"""
 	Local implementation of fabric.api.run() using subprocess.
 
@@ -169,7 +169,7 @@ def run_local(command, sudo=False, shell=True, pty=True, combine_stderr=None):
 	"""
 	if combine_stderr is None: combine_stderr = fabric.api.env.combine_stderr
 	# TODO: Pass the SUDO_PASSWORD variable to the command here
-	if sudo: command = "sudo " + command
+	if sudo: command = fabric.operations._sudo_prefix(user, group) + command
 	stderr   = subprocess.STDOUT if combine_stderr else subprocess.PIPE
 	lcwd = fabric.state.env.get('lcwd', None) or None #sets lcwd to None if it bools to false as well
 	process  = subprocess.Popen(command, shell=shell, stdout=subprocess.PIPE, stderr=stderr, cwd=lcwd)
