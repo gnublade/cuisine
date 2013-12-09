@@ -169,17 +169,23 @@ def run_local(command, sudo=False, shell=True, pty=True, combine_stderr=None, us
 	"""
 	if combine_stderr is None: combine_stderr = fabric.api.env.combine_stderr
 	# TODO: Pass the SUDO_PASSWORD variable to the command here
-	if sudo: command = fabric.operations._sudo_prefix(user, group) + command
+	# Handle context manager modifications, and shell wrapping
+	wrapped_command = _shell_wrap(
+	    _prefix_commands(_prefix_env_vars(command), 'remote'),
+	    fabric.api.env.get('shell_escape', True),
+	    shell,
+	    fabric.operations._sudo_prefix(user, group) if sudo else None
+	)
 	stderr   = subprocess.STDOUT if combine_stderr else subprocess.PIPE
 	lcwd = fabric.state.env.get('lcwd', None) or None #sets lcwd to None if it bools to false as well
-	process  = subprocess.Popen(command, shell=shell, stdout=subprocess.PIPE, stderr=stderr, cwd=lcwd)
+	process  = subprocess.Popen(wrapped_command, shell=shell, stdout=subprocess.PIPE, stderr=stderr, cwd=lcwd)
 	out, err = process.communicate()
 	# FIXME: Should stream the output, and only print it if fabric's properties allow it
 	# print out
 	# SEE: http://docs.fabfile.org/en/1.7/api/core/operations.html#fabric.operations.run
 	# Wrap stdout string and add extra status attributes
 	result              = fabric.operations._AttributeString(out.rstrip('\n'))
-	result.command      = command
+	result.command      = wrapped_command
 	result.real_command = command
 	result.return_code  = process.returncode
 	result.succeeded    = process.returncode == 0
