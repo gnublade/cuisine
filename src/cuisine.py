@@ -171,7 +171,7 @@ def run_local(command, sudo=False, shell=True, pty=True, combine_stderr=None, us
 	# TODO: Pass the SUDO_PASSWORD variable to the command here
 	# Handle context manager modifications, and shell wrapping
 	wrapped_command = fabric.operations._shell_wrap(
-	    _prefix_commands(_prefix_env_vars(command), 'remote'),
+	    fabric.operations._prefix_commands(fabric.operations._prefix_env_vars(command), 'remote'),
 	    fabric.api.env.get('shell_escape', True),
 	    shell,
 	    fabric.operations._sudo_prefix(user, group) if sudo else None
