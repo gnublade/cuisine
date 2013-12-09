@@ -170,7 +170,7 @@ def run_local(command, sudo=False, shell=True, pty=True, combine_stderr=None, us
 	if combine_stderr is None: combine_stderr = fabric.api.env.combine_stderr
 	# TODO: Pass the SUDO_PASSWORD variable to the command here
 	# Handle context manager modifications, and shell wrapping
-	wrapped_command = _shell_wrap(
+	wrapped_command = fabric.operations._shell_wrap(
 	    _prefix_commands(_prefix_env_vars(command), 'remote'),
 	    fabric.api.env.get('shell_escape', True),
 	    shell,
